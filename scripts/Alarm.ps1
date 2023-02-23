@@ -29,10 +29,6 @@ function Get-NSAlarm {
   'role', 'privilege', 'netconfig', 'events', 'session', 'subnet', 'array_netconfig', 'nic', 'initiatorgrp_subnet', 'fc_initiator_alias', 'fc_port', 
   'fc_interface_collection', 'fc', 'event_dipatcher', 'fc_target_port_group', 'encrypt_key', 'encrypt_config', 'snapshot_lun', 'syslog', 'async_job', 
   'application_server', 'audit_log', 'ip address', 'disk', 'shelf', 'protocol_endpoint', 'folder', 'pe_acl', 'vvol', 'vvol_acl', 'alarm'.
-.PARAMETER onset_time
-  Time when this alarm was triggered. Seconds since last epoch i.e. 00:00 January 1, 1970. Example: '3400'.
-.PARAMETER ack_time
-  Time when this alarm was acknowledged. Seconds since last epoch i.e. 00:00 January 1, 1970. Example: '3400'.
 .PARAMETER status
   Status of the operation -- open or acknowledged. Possible values: 'open', 'acknowledged'.	 
 .PARAMETER user_id
@@ -56,8 +52,6 @@ function Get-NSAlarm {
   a 'remind_every' of '1' results in one notification every day. Possible values: 'minutes', 'hours', 'days', 'weeks'.
 .PARAMETER activity
   Description of activity performed and recorded in alarm. String of 1-1476 printable characters. Example: 'Created snapshot % of volume %'.
-.PARAMETER next_notification_time
-  Time when next reminder for the alarm will be sent. Signed 64-bit integer. Example: -1234.
 .EXAMPLE
   C:\> Get-NSAlarm
 
@@ -85,76 +79,30 @@ function Get-NSAlarm {
 #>
 [CmdletBinding(DefaultParameterSetName='id')]
 param(
-    [Parameter(ParameterSetName='id')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string] $id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [int]$type,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$array,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$curr_onset_event_id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$object_id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$object_name,
-
+    [Parameter(ParameterSetName='id')] [ValidatePattern('([0-9a-f]{42})')]    [string]  $id,
+    [Parameter(ParameterSetName='nonId')]                                     [int]     $type,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $array,
+    [Parameter(ParameterSetName='nonId')] [ValidatePattern('([0-9a-f]{42})')] [string]  $curr_onset_event_id,
+    [Parameter(ParameterSetName='nonId')] [ValidatePattern('([0-9a-f]{42})')] [string]  $object_id,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $object_name,
     [Parameter(ParameterSetName='nonId')]
     [ValidateSet( 'array_netconfig', 'user_policy', 'subnet', 'encrypt_key', 'initiator', 'keymanager', 'nic', 'branch', 'fc_target_port_group', 'prottmpl', 'protpol', 'sshkey', 
                   'fc_interface_collection', 'volcoll', 'initiatorgrp_subnet', 'pe_acl', 'vvol_acl', 'chapuser', 'events', 'application_server', 'group', 'pool', 'vvol', 
                   'active_directory', 'shelf', 'disk', 'route', 'folder', 'ip address', 'fc', 'support', 'snapshot', 'throttle', 'role', 'snapcoll', 'session', 'async_job', 
                   'initiatorgrp', 'perfpolicy', 'privilege', 'syslog', 'user group', 'protsched', 'netconfig', 'vol', 'fc_initiator_alias', 'array', 'trusted_oauth_issuer', 
                   'alarm', 'fc_port', 'protocol_endpoint', 'folset', 'audit_log', 'hc_cluster_config', 'encrypt_config', 'witness', 'partner', 'snapshot_lun', 'event_dipatcher', 
-                  'volacl', 'user')]
-    [string]$object_type,
-
-    [Parameter(ParameterSetName='nonId')]
-    [Nullable[long]]$onset_time,
-
-    [Parameter(ParameterSetName='nonId')]
-    [Nullable[long]]$ack_time,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateSet( 'acknowledged', 'open')]
-    [string]$status,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$user_id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$user_name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$user_full_name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateSet( 'replication', 'volume', 'security', 'test', 'cloud_console', 'configuration', 'service', 'update', 'array_upgrade', 'unknown', 'hardware')]
-    [string]$category,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateSet( 'critical', 'warning')]
-    [string]$severity,
-
-    [Parameter(ParameterSetName='nonId')]
-    [int]$remind_every,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateSet( 'hours', 'weeks', 'minutes', 'days')]
-    [string]$remind_every_unit,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$activity,
-
-    [Parameter(ParameterSetName='nonId')]
-    [long]$next_notification_time
+                  'volacl', 'user')]                                          [string]  $object_type,
+    [Parameter(ParameterSetName='nonId')] [ValidateSet('acknowledged','open')][string]  $status,
+    [Parameter(ParameterSetName='nonId')] [ValidatePattern('([0-9a-f]{42})')] [string]  $user_id,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $user_name,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $user_full_name,
+    [Parameter(ParameterSetName='nonId')] [ValidateSet( 'replication', 'volume', 'security', 'test', 'cloud_console', 'configuration', 'service', 'update', 
+    'array_upgrade', 'unknown', 'hardware')]                                  [string]  $category,
+    [Parameter(ParameterSetName='nonId')] [ValidateSet('critical','warning')] [string]  $severity,
+    [Parameter(ParameterSetName='nonId')]                                     [int]     $remind_every,
+    [Parameter(ParameterSetName='nonId')] [ValidateSet('hours','weeks','minutes','days')]
+                                                                              [string]  $remind_every_unit,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $activity
   )
 process{ 
     $API = 'alarms'
@@ -216,14 +164,9 @@ function Set-NSAlarm {
 [CmdletBinding()]
 param(
     [Parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$id,
-
-    [Parameter(Mandatory = $True)]
-    [long] $remind_every,
-
-    [ValidateSet( 'hours', 'weeks', 'minutes', 'days')]
-    [string] $remind_every_unit
+    [ValidatePattern('([0-9a-f]{42})')]                 [string]$id,
+    [Parameter(Mandatory = $True)]                      [long] $remind_every,
+    [ValidateSet( 'hours', 'weeks', 'minutes', 'days')] [string] $remind_every_unit
   )
 process {
         # Gather request params based on user input.
@@ -259,7 +202,7 @@ function Remove-NSAlarm {
 .DESCRIPTION
   Delete an alarm with the given ID.
 .PARAMETER id
-  Identifier for the alarm.
+  Identifier for the alarm. A 42 digit hexadecimal number. Example: '2a0df0fe6f7dc7bb16000000000000000000004817'.
 .EXAMPLE
 C:\> Remove-NSAlarm -id 0d28eada7f8dd99d3b000000000000000000000053
 
@@ -268,8 +211,7 @@ C:\> Remove-NSAlarm -id 0d28eada7f8dd99d3b000000000000000000000053
 [CmdletBinding()]
 param(
     [Parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$id
+    [ValidatePattern('([0-9a-f]{42})')]   [string]$id
   )
 process {
     $Params = @{
@@ -314,15 +256,12 @@ function Clear-NSAlarm {
 [CmdletBinding()]
 param (
     [Parameter(ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$id,
+    [ValidatePattern('([0-9a-f]{42})')]                 [string]$id,
+
+    [Parameter(ValueFromPipelineByPropertyName=$True)]  [long]$remind_every,
 
     [Parameter(ValueFromPipelineByPropertyName=$True)]
-    [long]$remind_every,
-
-    [Parameter(ValueFromPipelineByPropertyName=$True)]
-    [ValidateSet( 'hours', 'weeks', 'minutes', 'days')]
-    [string]$remind_every_unit
+    [ValidateSet( 'hours', 'weeks', 'minutes', 'days')] [string]$remind_every_unit
   )
 process{
     $Params = @{
@@ -342,7 +281,12 @@ process{
     }
 
     $ResponseObject = Invoke-NimbleStorageAPIAction @Params
-    return $ResponseObject
+    if ( $ResponseObject.data )
+    {   return $ResponseObject.data 
+    }
+  else 
+    {   return $ResponseObject
+    }
   }
 }
 
@@ -384,8 +328,13 @@ process{
             $Params.Arguments.Add("$($var.name)", ($var.value))
         }
     }
-
+    
     $ResponseObject = Invoke-NimbleStorageAPIAction @Params
-    return $ResponseObject
-  }
+    if ( $ResponseObject.data )
+      {   return $ResponseObject.data 
+      }
+    else 
+      {   return $ResponseObject
+      }
+}
 }

@@ -8,6 +8,14 @@ function Get-NSSoftwareVersion {
   Read software versions.
 .DESCRIPTION
   Read software versions.
+.EXAMPLE
+  PS:> Get-NSSoftwareVersion
+
+  name            version
+  ----            -------
+  available       6.0.0.500-1005…
+  available       6.1.1.100-1013…
+  installed       6.0.0.300-9562…
 #>
 [CmdletBinding(DefaultParameterSetName='id')]
 param(
@@ -17,17 +25,6 @@ process{
     $Param = @{ ObjectName = 'SoftwareVersion'
                 APIPath = 'software_versions'
               }
-    # Get list of objects matching the given filter.
-    $Param.Filter = @{}
-    $ParameterList = (Get-Command -Name $MyInvocation.InvocationName).Parameters;
-    foreach ($key in $ParameterList.keys)
-        { if ($key.ToLower() -ne 'fields')
-            {   $var = Get-Variable -Name $key -ErrorAction SilentlyContinue;
-                if($var -and ($PSBoundParameters.ContainsKey($key)))
-                  {  $Param.Filter.Add("$($var.name)", ($var.value))
-                  }
-            }
-        }
     $ResponseObjectList = Get-NimbleStorageAPIObjectList @Param
     $CustomerReturnObj = $ResponseObjectList[0]
     $x11 = 0

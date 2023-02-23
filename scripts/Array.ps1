@@ -280,11 +280,9 @@ function Invoke-NSArrayFailover {
 [CmdletBinding(DefaultParameterSetName='allArgs')]
 param (
     [Parameter(ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]  $id,
+    [ValidatePattern('([0-9a-f]{42})')] [string]  $id,
 
-    [Parameter(ValueFromPipelineByPropertyName=$True)]    
-    [bool]    $force
+                                        [bool]    $force
   )
 process{
     $Params = @{
@@ -324,10 +322,9 @@ function Stop-NSArray {
 [CmdletBinding(DefaultParameterSetName='allArgs')]
 param (
     [Parameter(ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$id
+    [ValidatePattern('([0-9a-f]{42})')]   [string]$id
   )
-  process{
+process{
     $Params = @{
         APIPath = 'arrays'
         Action = 'halt'
@@ -365,8 +362,7 @@ function Reset-NSArray {
 [CmdletBinding(DefaultParameterSetName='allArgs')]
 param (
     [Parameter(ValueFromPipelineByPropertyName=$True, ParameterSetName='allArgs', Mandatory = $True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$id
+    [ValidatePattern('([0-9a-f]{42})')]   [string]$id
   )
 process{
     $Params = @{

@@ -74,12 +74,10 @@ function Set-NSDisk {
 #>
 [CmdletBinding()]
 param(  [Parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-        [ValidatePattern('([0-9a-f]{42})')] [string]$id,
-
+        [ValidatePattern('([0-9a-f]{42})')] [string]  $id,
         [Parameter(Mandatory = $True)]
-        [ValidateSet( 'add', 'remove')]     [string] $disk_op,
-
-                                            [bool] $force
+        [ValidateSet( 'add', 'remove')]     [string]  $disk_op,
+                                            [bool]    $force
   )
 process {
         # Gather request params based on user input.

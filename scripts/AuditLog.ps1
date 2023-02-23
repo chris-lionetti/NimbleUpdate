@@ -25,9 +25,6 @@ function Get-NSAuditLog {
   'async_job', 'application_server', 'audit_log', 'ip address', 'disk', 'shelf', 'protocol_endpoint', 'folder', 'pe_acl', 'vvol', 'vvol_acl', 'alarm'.	 
 .PARAMETER scope
   Scope within which object exists, for example, name of the array for a NIC. Possible values: array serial number, or '-'. Example: 'AC-109084'.
-.PARAMETER time
-  Time when this operation was performed. 
-  Seconds since last epoch i.e. 00:00 January 1, 1970. Example: '3400'.
 .PARAMETER status
   Status of the operation -- success or failure. 
   Possible values: 'invalid', 'unknown', 'succeeded', 'failed', 'inprogress'.
@@ -110,7 +107,6 @@ param(
                                                         'event_dipatcher', 'volacl', 'user')]
                                           [string]  $object_type,
     [Parameter(ParameterSetName='nonId')] [string]  $scope,
-    [Parameter(ParameterSetName='nonId')] [long]    $time,
     [Parameter(ParameterSetName='nonId')]                                 [ValidateSet( 'inprogress', 'failed', 'unknown', 'succeeded')]
                                           [string]  $status,
     [Parameter(ParameterSetName='nonId')] [string]  $error_code,

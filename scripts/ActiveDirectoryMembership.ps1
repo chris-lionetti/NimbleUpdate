@@ -8,47 +8,40 @@ function New-NSActiveDirectoryMembership {
   Joins with the Active Directory domain.
 .DESCRIPTION
   Joins with the Active Directory domain.
-.PARAMETER id
-  Identifier for the Active Directory Domain.
-.PARAMETER description
-  Description for the Active Directory Domain.
 .PARAMETER name
-  Identifier for the Active Directory domain.
+  Identifier for the Active Directory domain. Domain name for the Active Directory. Example: 'abc.corp'.
 .PARAMETER netbios
-  Netbios name for the Active Directory domain.
+  Netbios name for the Active Directory domain. Netbios name for the Active Directory. Example: 'corp'.
 .PARAMETER server_list
-  List of IP addresses or names for the backup domain controller.
+  List of IP addresses or names for the backup domain controller. 
+  Comma separated strings of up to 63 characters of hostname and/or ip addresses. Total length cannot exceed 255 characters.
 .PARAMETER computer_name
-  The name of the computer account in the domain controller.
+  The name of the computer account in the domain controller. 
+  Name of the computer account in Active Directory. Example: 'storage-array01'.
 .PARAMETER organizational_unit
-  The location for the computer account.
+  The location for the computer account. The location where the computer account has to be created. 
+  The value should be specified in fully distinguished name (DN) format. Reserved characters - comma, plus sign, 
+  double quote, backslash, left angle bracket, right angle bracket, semicolon, linefeed, carriage return, equals 
+  sign and forward slash must be escaped. Example: ou=ABC\, San Jose,dc=MY,dc=LOCAL.
 .PARAMETER user
-  Name of the Activer Directory user with Administrator's privilege.
+  Name of the Activer Directory user with Administrator's privilege. Active Directory username. 
+  String up to 104 printable characters. Example: 'joe-91'.
 .PARAMETER password
-  Password for the Active Directory user.
+  Password for the Active Directory user. Active Directory user password. 
+  String up to 255 printable characters. Example: 'password-91'.
 .PARAMETER enabled
-  Active Directory authentication is currently enabled.
+  Active Directory authentication is currently enabled. Possible values: 'true', 'false'.
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory=$True)]
-    [string] $name,
-
-    [string] $netbios,
-
-    [string] $server_list,
-
-    [string] $computer_name,
-
-    [string] $organizational_unit,
-
-    [Parameter(Mandatory=$True)]
-    [string] $user,
-
-    [Parameter(Mandatory=$True)]
-    [string] $password,
-
-    [bool]  $enabled
+    [Parameter(Mandatory=$True)]  [string]  $name,
+                                  [string]  $netbios,
+                                  [string]  $server_list,
+                                  [string]  $computer_name,
+                                  [string]  $organizational_unit,
+    [Parameter(Mandatory=$True)]  [string]  $user,
+    [Parameter(Mandatory=$True)]  [string]  $password,
+                                  [bool]    $enabled
   )
 process {
         # Gather request params based on user input.
@@ -80,58 +73,47 @@ function Get-NSActiveDirectoryMembership {
 .DESCRIPTION
   List the Active Directory Information.
 .PARAMETER id
-        Identifier for the Active Directory Domain.
+  Identifier for the Active Directory Domain registration object.
 .PARAMETER description
-        Description for the Active Directory Domain.
+  Description for the Active Directory Domain.
 .PARAMETER name
-        Identifier for the Active Directory domain.
+  Identifier for the Active Directory domain. Domain name for the Active Directory. Example: 'abc.corp'.
 .PARAMETER netbios
-        Netbios name for the Active Directory domain.
+  Netbios name for the Active Directory domain. Netbios name for the Active Directory. Example: 'corp'.
 .PARAMETER server_list
-        List of IP addresses or names for the backup domain controller.
+  List of IP addresses or names for the backup domain controller.
 .PARAMETER computer_name
-        The name of the computer account in the domain controller.
+  The name of the computer account in the domain controller. 
+  Name of the computer account in Active Directory. Example: 'storage-array01'.
 .PARAMETER organizational_unit
-        The location for the computer account.
+  The location for the computer account. The location where the computer account has to be created. 
+  The value should be specified in fully distinguished name (DN) format. Reserved characters - comma, plus sign, 
+  double quote, backslash, left angle bracket, right angle bracket, semicolon, linefeed, carriage return, equals 
+  sign and forward slash must be escaped. Example: ou=ABC\, San Jose,dc=MY,dc=LOCAL.
 .PARAMETER user
-        Name of the Activer Directory user with Administrator's privilege.
-.PARAMETER password
-        Password for the Active Directory user.
+  Name of the Activer Directory user with Administrator's privilege.
 .PARAMETER enabled
-        Active Directory authentication is currently enabled.
+  Active Directory authentication is currently enabled.
+.EXAMPLE
+  PS:> Get-NSActiveDirectoryMembership
+
+  name            netbios        organizational_unit  enabled  computer_name  description
+  ----            -------        -------------------  -------  -------------  -----------
+  lionetti.lab    lionetti       AD default location  True     galactica
+  PS:>
 #>
 [CmdletBinding(DefaultParameterSetName='id')]
 param(
     [Parameter(ParameterSetName='id')]
-    [ValidatePattern('([0-9a-f]{2})([0-9a-f]{16})([0-9a-f]{16})([0-9a-f]{8})')]
-    [string] $id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$description,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$netbios,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$server_list,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$computer_name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$organizational_unit,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$user,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$password,
-
-    [Parameter(ParameterSetName='nonId')]
-    [bool]$enabled
+    [ValidatePattern('([0-9a-f]{42})')]   [string]  $id,
+    [Parameter(ParameterSetName='nonId')] [string]  $description,
+    [Parameter(ParameterSetName='nonId')] [string]  $name,
+    [Parameter(ParameterSetName='nonId')] [string]  $netbios,
+    [Parameter(ParameterSetName='nonId')] [string]  $server_list,
+    [Parameter(ParameterSetName='nonId')] [string]  $computer_name,
+    [Parameter(ParameterSetName='nonId')] [string]  $organizational_unit,
+    [Parameter(ParameterSetName='nonId')] [string]  $user,
+    [Parameter(ParameterSetName='nonId')] [bool]    $enabled
   )
 process{
     $API = 'active_directory_memberships'
@@ -196,6 +178,10 @@ function Set-NSActiveDirectoryMembership {
   Example: ou=ABC\, San Jose,dc=MY,dc=LOCAL.
 .PARAMETER enabled
   Active Directory authentication is currently enabled. Possible values: 'true', 'false'.
+.EXAMPLE
+  Set-NSActiveDirectoryMembership -id '2a0df0fe6f7dc7bb16000000000000000000004817' -description 'Adding a unqiue descriton'
+
+  Used to add a description to an Active Directory Domain Membership for the Array.
 #>
 [CmdletBinding()]
 param(
@@ -250,6 +236,10 @@ function Remove-NSActiveDirectoryMembership {
 .PARAMETER force 
   Use this option when there is an error when leaving the domain. 
   Possible values: 'true', 'false'.
+.EXAMPLE
+  PS:> Remove-NSActiveDirectoryMembership -id '362afce87958572396000000000000000000000002' -user Chris -password 'MySuperSecret1' -force $true
+
+  This will use the given username and password which are authorized in the domain to remove the domain membership for the array.
 #>
 [CmdletBinding()]
 param (
@@ -294,8 +284,16 @@ function Test-NSActiveDirectoryMembership {
   Reports the detail status of the Active Directory domain.
 .DESCRIPTION
   Reports the detail status of the Active Directory domain.
-.PARAMETER id <string>
+.PARAMETER id
   ID of the active directory. A 42 digit hexadecimal number. Example: '2a0df0fe6f7dc7bb16000000000000000000004817'.
+.EXAMPLE
+  PS:> Test-NSActiveDirectoryMembership -id 362afce87958572396000000000000000000000002
+
+  joined                : True
+  enabled               : True
+  local_service_status  : True
+  remote_service_status : True
+  trust_valid           : True
 #>
 [CmdletBinding()]
 param (
@@ -338,6 +336,27 @@ function Test-NSActiveDirectoryMembershipUser {
 .PARAMETER name
   Name of the Active Directory user. Active Directory username. 
   String up to 104 printable characters. Example: 'joe-91'.
+.EXAMPLE
+  PS:> Test-NSActiveDirectoryMembershipUser -id 362afce87958572396000000000000000000000002 -name 'Chrisl'
+  OperationStopped: C:\Users\chris\Documents\PowerShell\Modules\HPEAlletra6000andNimbleStoragePowerShellToolkit\3.4.1\scripts\helpers.ps1:745
+  Line  |
+  745   |         throw [System.Exception] $exceptionString
+        |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        | Server has not found the requested object.  No such object.
+  PS:>
+
+  The above example is the exception that is thrown when the user cannot be found or verified.
+.EXAMPLE
+  PS:> Test-NSActiveDirectoryMembershipUser -id 362afce87958572396000000000000000000000002 -name 'Chris'
+
+  username           : Chris
+  primary_group_name :
+  primary_group_id   : 372afce87958572396000000000000000000000000
+  group_count        : 0
+  role               : invalid
+  groups             : {}
+
+  The above is the expected output from the test being able to successfully query the user.
 #>
 [CmdletBinding()]
 param (
@@ -349,22 +368,13 @@ param (
     [string]$name
   )
 process{
-    $Params = @{
-        APIPath = 'active_directory_memberships'
-        Action = 'test_user'
-        ReturnType = 'NsADTestUserReturn'
-    }
-    $Params.Arguments = @{}
-    $ParameterList = (Get-Command -Name $MyInvocation.InvocationName).Parameters;
-    foreach ($key in $ParameterList.keys)
-    {
-        $var = Get-Variable -Name $key -ErrorAction SilentlyContinue;
-        if($var -and ($PSBoundParameters.ContainsKey($key)))
-        {
-            $Params.Arguments.Add("$($var.name)", ($var.value))
-        }
-    }
-
+    $Params = @{  APIPath = 'active_directory_memberships'
+                  Action = 'test_user'
+                  ReturnType = 'NsADTestUserReturn'
+                  id = $id
+                  Arguments = @{ 'name' = $name
+                              }
+              }
     $ResponseObject = Invoke-NimbleStorageAPIAction @Params
     return $ResponseObject
   }
@@ -382,34 +392,49 @@ function Test-NSActiveDirectoryMembershipGroup {
   Name of the Active Directory group. 
   String of up to 64 uppercase or lowercase characters excluding ampersand, less than, 
   greater than and ^/\[]:;|=,+*?;. Example: 'admin-group-24'.
+.EXAMPLE
+  PS:> Test-NSActiveDirectoryMembershipGroup -id 362afce87958572396000000000000000000000002 -name 'NimbleAdmin'
+  OperationStopped: C:\Users\chris\Documents\PowerShell\Modules\HPEAlletra6000andNimbleStoragePowerShellToolkit\3.4.1\scripts\helpers.ps1:745
+  Line  |
+  745   |         throw [System.Exception] $exceptionString
+        |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        | Server has not found the requested object.  No such object.
+  PS:> Test-NSActiveDirectoryMembershipGroup -id 362afce87958572396000000000000000000000002 -name 'NimbleAdmins'
+
+  The above example is the output when the command fails, it throws an exception since the test cannot find the usergroup.
+  .EXAMPLE
+  PS:> Test-NSActiveDirectoryMembershipGroup -id 362afce87958572396000000000000000000000002 -name 'NimbleAdmins'
+
+  Name                           Value
+  ----                           -----
+  name                           NimbleAdmins
+  Success                        True 
+
+  This is an example of what is expected when the test is successful.
+  
+  PS:>
 #>
 [CmdletBinding()]
 param (
     [Parameter(ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$id,
+    [ValidatePattern('([0-9a-f]{42})')]   [string]$id,
 
     [Parameter(ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-    [string]$name
+                                          [string]$name
   )
 process{
-    $Params = @{
-        APIPath = 'active_directory_memberships'
-        Action = 'test_group'
-        ReturnType = 'void'
-    }
-    $Params.Arguments = @{}
-    $ParameterList = (Get-Command -Name $MyInvocation.InvocationName).Parameters;
-    foreach ($key in $ParameterList.keys)
-    {
-        $var = Get-Variable -Name $key -ErrorAction SilentlyContinue;
-        if($var -and ($PSBoundParameters.ContainsKey($key)))
-        {
-            $Params.Arguments.Add("$($var.name)", ($var.value))
-        }
-    }
+  $Params = @{  APIPath =     'active_directory_memberships'
+                Action =      'test_user'
+                ReturnType =  'NsADTestUserReturn'
+                id =          $id
+                Arguments =   @{ 'name' = $name
+                              }
+            }
 
-    $ResponseObject = Invoke-NimbleStorageAPIAction @Params
-    return $ResponseObject
+  $ResponseObject = Invoke-NimbleStorageAPIAction @Params
+  $MyObj = @{ "name" = $name
+              "Success" = $True 
+            }
+  return $MyObj
   }
 }

@@ -42,19 +42,14 @@ function Get-NSApplicationCategory {
 #>
 [CmdletBinding(DefaultParameterSetName='id')]
 param(
-    [Parameter(ParameterSetName='id', Mandatory=$True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string] $id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$name
+    [Parameter(ParameterSetName='id', Mandatory=$True)]   [ValidatePattern('([0-9a-f]{42})')]   [string] $id,
+                                                          [Parameter(ParameterSetName='nonId')] [string]$name
   )
-process
-  { $API = 'application_categories'
-    $Param = @{
-      ObjectName = 'ApplicationCategory'
-      APIPath = 'application_categories'
-    }
+process{ 
+    $API = 'application_categories'
+    $Param = @{   ObjectName = 'ApplicationCategory'
+                  APIPath = 'application_categories'
+              }
     if ($id)
     {   # Get a single object for given Id.
         $Param.Id = $id

@@ -122,7 +122,7 @@ function Get-NSChapUser {
 [CmdletBinding(DefaultParameterSetName='id')]
 param(
     [Parameter(ParameterSetName='id')]
-    [ValidatePattern('([0-9a-f]{42})')]   [string] $id,
+    [ValidatePattern('([0-9a-f]{42})')]   [string]  $id,
     [Parameter(ParameterSetName='nonId')] [string]  $name,
     [Parameter(ParameterSetName='nonId')] [string]  $full_name,
     [Parameter(ParameterSetName='nonId')] [string]  $search_name,

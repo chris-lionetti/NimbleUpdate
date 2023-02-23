@@ -53,37 +53,23 @@ param(
     [Parameter(ParameterSetName='Volume')]
     [Parameter(ParameterSetName='vVol')]
     [ValidateSet( 'volume', 'pe', 'vvol_volume', 'vvol_snapshot', 'snapshot', 'both')]
-    [string] $apply_to,
-
+                                            [string]    $apply_to,
     [Parameter(ParameterSetName='Volume')]
     [Parameter(ParameterSetName='vVol')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string] $chap_user_id,
-
+    [ValidatePattern('([0-9a-f]{42})')]     [string]    $chap_user_id,
     [Parameter(ParameterSetName='Volume')]
     [Parameter(ParameterSetName='vVol')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string] $initiator_group_id,
-
+    [ValidatePattern('([0-9a-f]{42})')]     [string]    $initiator_group_id,
+    [Parameter(ParameterSetName='Volume')]
+    [Parameter(ParameterSetName='vVol')]    [int]       $lun,
     [Parameter(ParameterSetName='Volume')]
     [Parameter(ParameterSetName='vVol')]
-    [int] $lun,
-
+    [ValidatePattern('([0-9a-f]{42})')]     [string]    $vol_id,
+    [Parameter(ParameterSetName='vVol')]
+    [ValidatePattern('([0-9a-f]{42})')]     [string]    $pe_id,
     [Parameter(ParameterSetName='Volume')]
-    [Parameter(ParameterSetName='vVol')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string] $vol_id,
-
-    [Parameter(ParameterSetName='vVol')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string] $pe_id,
-
-    [Parameter(ParameterSetName='Volume')]
-    [Parameter(ParameterSetName='vVol')]
-    [string] $snap_id,
-
-    [Parameter(ParameterSetName='vVol')]
-    [Object[]] $pe_ids
+    [Parameter(ParameterSetName='vVol')]    [string]    $snap_id,
+    [Parameter(ParameterSetName='vVol')]    [Object[]]  $pe_ids
   )
 process {
         # Gather request params based on user input.
@@ -183,64 +169,24 @@ function Get-NSAccessControlRecord {
 #>
 [CmdletBinding(DefaultParameterSetName='id')]
 param(
-    [Parameter(ParameterSetName='id')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]  $id,
-
+    [Parameter(ParameterSetName='id')]  [ValidatePattern('([0-9a-f]{42})')]   [string]  $id,
+    [Parameter(ParameterSetName='nonId')] [ValidateSet( 'volume', 'pe', 'vvol_volume', 'vvol_snapshot', 'snapshot', 'both')]
+                                                                              [string]  $apply_to,
+    [Parameter(ParameterSetName='nonId')] [ValidatePattern('([0-9a-f]{42})')] [string]  $chap_user_id,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $chap_user_name,
+    [Parameter(ParameterSetName='nonId')] [ValidatePattern('([0-9a-f]{42})')] [string]  $initiator_group_id,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $initiator_group_name,
+    [Parameter(ParameterSetName='nonId')] [ValidateRange(0,2047)]             [string]  $lun,
+    [Parameter(ParameterSetName='nonId')] [ValidatePattern('([0-9a-f]{42})')] [string]  $vol_id,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $vol_name,
     [Parameter(ParameterSetName='nonId')]
-    [ValidateSet( 'volume', 'pe', 'vvol_volume', 'vvol_snapshot', 'snapshot', 'both')]
-    [string]  $apply_to,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]  $chap_user_id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]  $chap_user_name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]  $initiator_group_id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]  $initiator_group_name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateRange(0,2047)]
-    [string]  $lun,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]  $vol_id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]  $vol_name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateSet( 'smis', 'vvol', 'openstack', 'openstackv2', 'none')]
-    [string]  $vol_agent_type,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]  $pe_id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]  $pe_name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateRange(0,2047)]
-    [long]    $pe_lun,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]  $snap_id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]  $snap_name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateSet( 'iscsi', 'fc')]
-    [string]  $access_protocol
+    [ValidateSet( 'smis', 'vvol', 'openstack', 'openstackv2', 'none')]        [string]  $vol_agent_type,
+    [Parameter(ParameterSetName='nonId')] [ValidatePattern('([0-9a-f]{42})')] [string]  $pe_id,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $pe_name,
+    [Parameter(ParameterSetName='nonId')] [ValidateRange(0,2047)]             [long]    $pe_lun,
+    [Parameter(ParameterSetName='nonId')] [ValidatePattern('([0-9a-f]{42})')] [string]  $snap_id,
+    [Parameter(ParameterSetName='nonId')]                                     [string]  $snap_name,
+    [Parameter(ParameterSetName='nonId')] [ValidateSet( 'iscsi', 'fc')]       [string]  $access_protocol
   )
 process{
     $API = 'access_control_records'
@@ -287,8 +233,7 @@ function Remove-NSAccessControlRecord {
 #> 
 [CmdletBinding()]
 param(  [Parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-        [ValidatePattern('([0-9a-f]{42})')]
-        [string]  $id
+        [ValidatePattern('([0-9a-f]{42})')]   [string]  $id
   )
 process{  $Params = @{  ObjectName = 'AccessControlRecord'
                         APIPath = 'access_control_records'

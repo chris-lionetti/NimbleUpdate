@@ -185,20 +185,21 @@ function IgnoreServerCertificate {
     [CustomCertificateValidationCallback]::Install()
 }
 
-function Invoke-NimbleStorageRestAPI ()
-{
-    param(
+function Invoke-NimbleStorageRestAPI () {
+param(
         [Parameter(Mandatory=$true)][string] $ResourcePath,
         [string] $APIVersion = 'v1',
         [string] $Method = 'GET',
         [hashtable] $RequestParams = @{}
-    )
+)
 
-    if (!(Get-Variable NimbleStorageTokenData -Scope Global -ErrorAction SilentlyContinue)) {
-       Write-Error -Message "Authentication Info missing. Please use Connect-NSGroup to login." -ErrorAction Stop
-    }
+    if (!(Get-Variable NimbleStorageTokenData -Scope Global -ErrorAction SilentlyContinue)) 
+        {   Write-Error -Message "Authentication Info missing. Please use Connect-NSGroup to login." -ErrorAction Stop
+        }
 
-    if ( $NimbleStorageIgnoreServerCertificate ) { IgnoreServerCertificate }
+    if ( $NimbleStorageIgnoreServerCertificate ) 
+        { IgnoreServerCertificate 
+        }
 
     # Form the parameters to Invoke-RestMethod call.
     $WebRequestParams = @{
@@ -210,49 +211,34 @@ function Invoke-NimbleStorageRestAPI ()
     # Copy request params to different variable. We may need to specifically process few of them.
     $RequestData = @{}
     foreach ($key in $RequestParams.keys)
-    {
-        # PowerShell serializes Booleans in JSON as True/False. We need all lowercase for Nimble Array's REST Server.
+    {   # PowerShell serializes Booleans in JSON as True/False. We need all lowercase for Nimble Array's REST Server.
         if ($RequestParams.$key.getType() -eq [bool])
-        {
-            $RequestData.Add($key, $RequestParams.$key.ToString().ToLower())
+        {   $RequestData.Add($key, $RequestParams.$key.ToString().ToLower())
         }
         elseif ($key -eq 'fields' -and $Method -eq 'GET')
-        {
-            # Array of fields. Convert to comma separated list.
+        {   # Array of fields. Convert to comma separated list.
             $RequestData.Add('fields', ($RequestParams['fields'] | Select-Object -unique) -join ',')
         }
         else
-        {
-            $RequestData.Add($key, $RequestParams.$key);
+        {   $RequestData.Add($key, $RequestParams.$key);
         }
     }
 
-    switch($Method) {
-        'GET' {
-            # Hashmap supplied in Body for GET request gets converted to query params automatically.
-            $WebRequestParams.Add('Body',$RequestData)
-        }
-
-        'POST' {
-            # Encapsulate request payload in 'data'..
-            $RequestDataForNimbleAPI = @{
-                data = $RequestData
-            }
-
-            $WebRequestParams.Add('Body',($RequestDataForNimbleAPI | ConvertTo-Json -Depth 10))
-        }
-
-        'PUT'{
-            $RequestDataForNimbleAPI = @{
-                data = $RequestData
-            }
-
-            $WebRequestParams.Add('Body',($RequestDataForNimbleAPI | ConvertTo-Json -Depth 10))
-        }
-
-        'DELETE' {
-            # Do nothing. No Body expected/required for delete request.
-        }
+    switch($Method) 
+    {   'GET'   {   # Hashmap supplied in Body for GET request gets converted to query params automatically.
+                    $WebRequestParams.Add('Body',$RequestData)
+                }
+        'POST'  {   # Encapsulate request payload in 'data'..
+                    $RequestDataForNimbleAPI = @{   data = $RequestData
+                                                }
+                    $WebRequestParams.Add('Body',($RequestDataForNimbleAPI | ConvertTo-Json -Depth 10))
+                }
+        'PUT'   {   $RequestDataForNimbleAPI = @{   data = $RequestData
+                                                }
+                    $WebRequestParams.Add('Body',($RequestDataForNimbleAPI | ConvertTo-Json -Depth 10))
+                }
+        'DELETE'{   # Do nothing. No Body expected/required for delete request.
+                }
     }
 
     Write-Verbose ($WebRequestParams | ConvertTo-Json -Depth 50)
@@ -264,9 +250,9 @@ function Invoke-NimbleStorageRestAPI ()
             {   if ($retry_count -ne 0)
                     {   Start-Sleep -Milliseconds 30
                     }
+                Write-Verbose " Calling Invoke-RestMethod"
                 $JsonResponse = (Invoke-RestMethod @WebRequestParams  | ConvertTo-Json -Depth 50)
-                Write-Verbose "Server Response: $JsonResponse"
-
+                Write-Verbose "Invoke-RestMethod Call Response: $JsonResponse"
                 #
                 #  The Invoke-Restmethod was successful we should exit the retry loop. 
                 #  To do that we will force the retry count max surpass the max.
@@ -289,7 +275,7 @@ function Invoke-NimbleStorageRestAPI ()
             }
     
     } until ($retry_count -gt $max_retry_count) 
-
+    write-verbose "Exiting Invoke-NimbleStorageRestAPI Call."
     return ($JsonResponse | ConvertFrom-Json)
 }
 
@@ -470,36 +456,41 @@ function Invoke-NimbleStorageAPIAction()
     }
 
     if ($Arguments.id)
-    {
+    {   write-verbose "An ID was sent into the Invoke-NimbleAPI Action call."
         $id = $($Arguments.id)
         $Params.ResourcePath = $APIPath + "/$id/actions/$Action"
         $Arguments.Remove('id')
     }
-
+    write-verbose "Making call to Invoke-NimbleStorageRestAPI."
     $ResponseObject = (Invoke-NimbleStorageRestAPI @Params)
-    if ($ReturnType -eq "void")
-    {
-        # Return empty object
+    if ( $ResponseObject.data )
+        {   write-verbose "Detected a Dataset to return."
+        }
+    else 
+        {   write-verbose "The call returned no dataset."
+            
+        }
+    if ($ReturnType -eq "void" -or ( -not $ResponseObject.data ))
+    {   # Return empty object
+        Write-Verbose "Returning an Action call that expected a Void return or no data to return."
+        write-verbose "The ResponseData looks like this:"
+        write-verbose ($ReponseObject | convertto-json)
         return $ResponseObject
+    } 
+    else
+    {   $APIObject = $ResponseObject.data
+        $DataSetType = "NimbleStorage.$ReturnType"
+        $APIObject.PSTypeNames.Insert(0,$DataSetType)
+        $DataSetType = $DataSetType + ".TypeName"
+        $APIObject.PSObject.TypeNames.Insert(0,$DataSetType)
+        return $APIObject
     }
-    $APIObject = $ResponseObject.data
-    $DataSetType = "NimbleStorage.$ReturnType"
-    $APIObject.PSTypeNames.Insert(0,$DataSetType)
-    $DataSetType = $DataSetType + ".TypeName"
-    $APIObject.PSObject.TypeNames.Insert(0,$DataSetType)
-
-    return $APIObject
 }
 
 
-function ValidateServerCertificate() 
-{
-
-    param(
-    [Parameter(Mandatory,Position=0)]
-        [string]$Group )
-
-
+function ValidateServerCertificate() {
+param(  [Parameter(Mandatory,Position=0)]   [string]$Group 
+)
     $Code = @'
         using System;
         using System.Collections.Generic;
@@ -537,84 +528,76 @@ function ValidateServerCertificate()
         }
 '@
 
-if ($PSEdition -ne 'Core'){
-    $webrequest=[net.webrequest]::Create("https://$Group")
+if ($PSEdition -ne 'Core')
+{   $webrequest=[net.webrequest]::Create("https://$Group")
     try { $response=$webrequest.getresponse() } catch {}
     $cert=$webrequest.servicepoint.certificate
-    if($cert -ne $null){
-            $Thumbprint = $webrequest.ServicePoint.Certificate.GetCertHashString()
+    if($cert -ne $null)
+        {   $Thumbprint = $webrequest.ServicePoint.Certificate.GetCertHashString()
             $bytes=$cert.export([security.cryptography.x509certificates.x509contenttype]::cert)
             $tfile=[system.io.path]::getTempFileName()
             set-content -value $bytes -encoding byte -path $tfile
             $certdetails = $cert | select * | ft -AutoSize | Out-String
             if ($($GlobalImportServerCertificate))  
-            {   
-                try{
-                    $output =import-certificate -filepath $tfile -certStoreLocation 'Cert:\localmachine\Root'
-                    $certdetails = $output | select -Property Thumbprint,subject | ft -AutoSize | Out-String
+            {   try{    $output =import-certificate -filepath $tfile -certStoreLocation 'Cert:\localmachine\Root'
+                        $certdetails = $output | select -Property Thumbprint,subject | ft -AutoSize | Out-String
                     }
-                catch{
-                    Write-Error "Failed to import the server certificate `n`n $_.Exception.Message"  -ErrorAction Stop
-                }
+                catch{  Write-Error "Failed to import the server certificate `n`n $_.Exception.Message"  -ErrorAction Stop
+                    }
                 Write-Host "Successfully imported the server certificate `n $certdetails"
             }
-            else{
-                 if((Get-ChildItem -Path Cert:\LocalMachine\root | Where-Object {$_.Thumbprint -eq $Thumbprint})){ }                
-                 else{
-                        write-Error "The security certificate presented by host $Group was not issued by a trusted certificate authority. Please verify the certificate details shown below and use ImportServerCertificate command line parameter to proceed. `n $certdetails `n`n" -ErrorAction Stop 
-                     }
+            else
+            {   if((Get-ChildItem -Path Cert:\LocalMachine\root | Where-Object {$_.Thumbprint -eq $Thumbprint}))
+                        { 
+                        }                
+                    else
+                        {   write-Error "The security certificate presented by host $Group was not issued by a trusted certificate authority. Please verify the certificate details shown below and use ImportServerCertificate command line parameter to proceed. `n $certdetails `n`n" -ErrorAction Stop 
+                        }
             }
-
-             ResolveIPtoHost $cert.subject $Group
-
-
+            ResolveIPtoHost $cert.subject $Group
         }
-    else{
-            Write-Error "Failed to import the server certificate `n`n"  -ErrorAction Stop
-
+    else{   Write-Error "Failed to import the server certificate `n`n"  -ErrorAction Stop
         }  
-}else { 
-        Add-Type $Code
-        $Certs = [CertificateCapture.Utility]::CapturedCertificates
-        $Handler = [System.Net.Http.HttpClientHandler]::new()
-        $Handler.ServerCertificateCustomValidationCallback = [CertificateCapture.Utility]::ValidationCallback
-        $Client = [System.Net.Http.HttpClient]::new($Handler)
-        $Url = "https://$Group"
-        $Result = $Client.GetAsync($Url).Result
-        $cert= $Certs[-1].Certificate
-        if($certs -ne $null){
-            $certdetails = $cert | select -Property Thumbprint,subject | ft -AutoSize | Out-String
+}
+else 
+{   Add-Type $Code
+    $Certs = [CertificateCapture.Utility]::CapturedCertificates
+    $Handler = [System.Net.Http.HttpClientHandler]::new()
+    $Handler.ServerCertificateCustomValidationCallback = [CertificateCapture.Utility]::ValidationCallback
+    $Client = [System.Net.Http.HttpClient]::new($Handler)
+    $Url = "https://$Group"
+    $Result = $Client.GetAsync($Url).Result
+    $cert= $Certs[-1].Certificate
+    if($certs -ne $null)
+        {   $certdetails = $cert | select -Property Thumbprint,subject | ft -AutoSize | Out-String
             if ($($GlobalImportServerCertificate))  
-            {
-                $bytes=$cert.export([security.cryptography.x509certificates.x509contenttype]::cert)
+            {   $bytes=$cert.export([security.cryptography.x509certificates.x509contenttype]::cert)
                 $OpenFlags = [System.Security.Cryptography.X509Certificates.OpenFlags]
                 $store = new-object system.security.cryptography.X509Certificates.X509Store -argumentlist "Root","LocalMachine"
-                try{
-                        $Store.Open($OpenFlags::ReadWrite)
+                try{    $Store.Open($OpenFlags::ReadWrite)
                         $Store.Add($Cert)
                         $Store.Close()
                         Write-Host "Successfully imported the server certificate `n $certdetails" 
                     }
-                catch{
-                        Write-Error "Failed to import the server certificate `n`n $_.Exception.Message"  -ErrorAction Stop
-                }
+                catch{  Write-Error "Failed to import the server certificate `n`n $_.Exception.Message"  -ErrorAction Stop
+                    }
             }
             else
-            {
-               if((Get-ChildItem -Path Cert:\LocalMachine\root | Where-Object {$_.Thumbprint -eq $cert.Thumbprint})){ }                
-                 else{
-                        write-Error "The security certificate presented by host $Group was not issued by a trusted certificate authority. Please verify the certificate details shown below and use ImportServerCertificate command line parameter to proceed. `n $certdetails `n`n" -ErrorAction Stop 
-                     }
+            {   if((Get-ChildItem -Path Cert:\LocalMachine\root | Where-Object {$_.Thumbprint -eq $cert.Thumbprint}))
+                { 
+                }                
+                else
+                {   write-Error "The security certificate presented by host $Group was not issued by a trusted certificate authority. Please verify the certificate details shown below and use ImportServerCertificate command line parameter to proceed. `n $certdetails `n`n" -ErrorAction Stop 
+                }
             }
-             ResolveIPtoHost $cert.subject $Group
+            ResolveIPtoHost $cert.subject $Group
         }
-        else{
-            Write-Error "Failed to import the server certificate `n`n"  -ErrorAction Stop
+        else
+        {   Write-Error "Failed to import the server certificate `n`n"  -ErrorAction Stop
         }
-
-
 }
 }
+
 function ResolveIPtoHost{
 
  param(
@@ -682,43 +665,44 @@ function ResolveIPtoHost{
 }
 
 Function APIExceptionHandler
-{
-   #Exception message handle differently for core and non core environment
-   #GetResponseStream method does not work in core environment
+{   # Exception message handle differently for core and non core environment
+    # GetResponseStream method does not work in core environment
 
-   if(Get-Member -inputobject $_.Exception.Response -name "GetResponseStream" -Membertype Method)
-   {
-       $JsonResponse = $_.Exception.Response.GetResponseStream()
-       $reader = New-Object System.IO.StreamReader($JsonResponse)
-       $reader.BaseStream.Position = 0
-       $reader.DiscardBufferedData()
-       $responseBody = $reader.ReadToEnd();
-       if (($responseBody | ConvertFrom-Json).messages -ne $null)
-       {
-            foreach( $errorMsg in ($responseBody | ConvertFrom-Json).messages) {
-            if($errorMsg.text -ne $null) {$exceptionString += $errorMsg.text + "  "}
-        }
-        throw [System.Exception] $exceptionString
+    if( Get-Member -inputobject $_.Exception.Response -name "GetResponseStream" -Membertype Method )
+    {   write-verbose "The GetReponseStream method worked"
+        $JsonResponse = $_.Exception.Response.GetResponseStream()
+        $reader = New-Object System.IO.StreamReader($JsonResponse)
+        $reader.BaseStream.Position = 0
+        $reader.DiscardBufferedData()
+        $responseBody = $reader.ReadToEnd();
+        if (($responseBody | ConvertFrom-Json).messages -ne $null)
+        {   foreach( $errorMsg in ($responseBody | ConvertFrom-Json).messages) 
+                {   if($errorMsg.text -ne $null) 
+                        {   $exceptionString += $errorMsg.text + "  "
+                        }
+                }
+            throw [System.Exception] $exceptionString
         }
         else
-        {
-            throw $_.Exception
+        {   throw $_.Exception
         }
     }
     else
-    {
-        
+    {   write-verbose "The GetResponseStream Method didnt work"
         $responseBody = $_.ErrorDetails
+        write-verbose ( $ResponseBody | out-string )
         if (($responseBody | ConvertFrom-Json).messages -ne $null)
-        {
-            foreach( $errorMsg in ($responseBody | ConvertFrom-Json).messages) {
-            if($errorMsg.text -ne $null) {$exceptionString += $errorMsg.text + "  "}
-        }
-        throw [System.Exception] $exceptionString
+        {   foreach( $errorMsg in ($responseBody | ConvertFrom-Json).messages) 
+                {   if($errorMsg.text -ne $null) 
+                        {   $exceptionString += $errorMsg.text + "  "
+                        }
+                }
+            write-verbose $exceptionString
+            write-error $exceptionString
+            throw [System.Exception] $exceptionString
         }
         else
-        {
-            throw $_.Exception
+        {   throw $_.Exception
         }
     }       
 }

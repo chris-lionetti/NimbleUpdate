@@ -140,30 +140,15 @@ function Get-NSApplicationServer {
 [CmdletBinding(DefaultParameterSetName='id')]
 param(
     [Parameter(ParameterSetName='id')]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string] $id,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$name,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$hostname,
-
-    [Parameter(ParameterSetName='nonId')]
-    [int]$port,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$username,
-
-    [Parameter(ParameterSetName='nonId')]
-    [string]$description,
-
-    [Parameter(ParameterSetName='nonId')]
-    [ValidateSet( 'vss', 'vmware', 'cisco', 'container_node', 'stack_vision')]
-    [string]$server_type,
-
-    [Parameter(ParameterSetName='nonId')]
-    [Object[]]$metadata
+    [ValidatePattern('([0-9a-f]{42})')]   [string]  $id,
+    [Parameter(ParameterSetName='nonId')] [string]  $name,
+    [Parameter(ParameterSetName='nonId')] [string]  $hostname,
+    [Parameter(ParameterSetName='nonId')] [int]     $port,
+    [Parameter(ParameterSetName='nonId')] [string]  $username,
+    [Parameter(ParameterSetName='nonId')] [string]  $description,
+    [Parameter(ParameterSetName='nonId')]                           [ValidateSet( 'vss', 'vmware', 'cisco', 'container_node', 'stack_vision')]
+                                          [string]  $server_type,
+    [Parameter(ParameterSetName='nonId')] [Object[]]$metadata
   )
 process{
     $API = 'application_servers'
@@ -232,18 +217,15 @@ function Set-NSApplicationServer {
 [CmdletBinding()]
 param(
     [Parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-    [ValidatePattern('([0-9a-f]{42})')]
-    [string]$id,
-    [string] $name,
-    [string] $hostname,
-    [ValidateRange(0,65535)]
-    [int]    $port,
-    [string] $username,
-    [string] $description,
-    [string] $password,
-    [ValidateSet( 'vss', 'vmware', 'cisco', 'container_node', 'stack_vision')]
-    [string] $server_type,
-    [Object[]] $metadata
+    [ValidatePattern('([0-9a-f]{42})')]                                       [string] $id,
+                                                                              [string] $name,
+                                                                              [string] $hostname,
+    [ValidateRange(0,65535)]                                                  [int]    $port,
+                                                                              [string] $username,
+                                                                              [string] $description,
+                                                                              [string] $password,
+    [ValidateSet( 'vss', 'vmware', 'cisco', 'container_node', 'stack_vision')][string] $server_type,
+                                                                              [Object[]] $metadata
   )
 process {
         # Gather request params based on user input.
@@ -283,8 +265,7 @@ function Remove-NSApplicationServer {
 #>
 [CmdletBinding()]
 param(  [Parameter(ValueFromPipeline=$True, ValueFromPipelineByPropertyName=$True, Mandatory = $True)]
-        [ValidatePattern('([0-9a-f]{42})')]
-        [string]$id
+        [ValidatePattern('([0-9a-f]{42})')]   [string]  $id
   )
 process {
     $Params = @{  ObjectName = 'ApplicationServer'
